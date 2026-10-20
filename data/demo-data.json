@@ -1,0 +1,43 @@
+{
+  "_aviso": "DATOS FICTICIOS DE DEMOSTRACIÓN. Ningún docente, precio, valoración o disponibilidad corresponde a personas reales. Las coordenadas son centroides aproximados de barrios de Quito, no direcciones.",
+  "ciudad": "Quito",
+  "zonaHoraria": "America/Guayaquil",
+  "moneda": "USD",
+  "niveles": ["Escolar", "Colegio", "Preuniversitario", "Universitario", "Adultos"],
+  "zonas": [
+    { "id": "carcelen", "nombre": "Carcelén", "lat": -0.093, "lon": -78.475 },
+    { "id": "cotocollao", "nombre": "Cotocollao", "lat": -0.110, "lon": -78.497 },
+    { "id": "condado", "nombre": "El Condado", "lat": -0.104, "lon": -78.513 },
+    { "id": "ponceano", "nombre": "Ponceano", "lat": -0.118, "lon": -78.480 },
+    { "id": "inca", "nombre": "El Inca", "lat": -0.141, "lon": -78.470 },
+    { "id": "quitotenis", "nombre": "Quito Tenis", "lat": -0.170, "lon": -78.497 },
+    { "id": "inaquito", "nombre": "Iñaquito", "lat": -0.174, "lon": -78.484 },
+    { "id": "carolina", "nombre": "La Carolina", "lat": -0.186, "lon": -78.483 },
+    { "id": "mariscal", "nombre": "La Mariscal", "lat": -0.203, "lon": -78.492 },
+    { "id": "floresta", "nombre": "La Floresta", "lat": -0.209, "lon": -78.483 },
+    { "id": "centro", "nombre": "Centro Histórico", "lat": -0.220, "lon": -78.512 },
+    { "id": "magdalena", "nombre": "La Magdalena", "lat": -0.246, "lon": -78.526 },
+    { "id": "solanda", "nombre": "Solanda", "lat": -0.266, "lon": -78.541 },
+    { "id": "chillogallo", "nombre": "Chillogallo", "lat": -0.281, "lon": -78.561 },
+    { "id": "quitumbe", "nombre": "Quitumbe", "lat": -0.296, "lon": -78.549 },
+    { "id": "cumbaya", "nombre": "Cumbayá", "lat": -0.201, "lon": -78.431 },
+    { "id": "tumbaco", "nombre": "Tumbaco", "lat": -0.212, "lon": -78.402 },
+    { "id": "conocoto", "nombre": "Conocoto", "lat": -0.290, "lon": -78.478 }
+  ],
+  "docentes": [
+    { "id": "d01", "nombre": "Andrea M.", "materias": ["Matemáticas", "Física"], "niveles": ["Colegio", "Preuniversitario"], "tarifa": 15, "modalidades": ["presencial", "virtual"], "zona": "carolina", "radioKm": 6, "experiencia": 6, "valoracion": 4.8, "resenas": 23, "bio": "Explico paso a paso y con ejercicios de examen. Me enfoco en que entiendas el porqué antes de memorizar fórmulas." },
+    { "id": "d02", "nombre": "Carlos V.", "materias": ["Inglés"], "niveles": ["Escolar", "Colegio", "Adultos"], "tarifa": 14, "modalidades": ["presencial", "virtual"], "zona": "cumbaya", "radioKm": 5, "experiencia": 8, "valoracion": 4.7, "resenas": 31, "bio": "Conversación desde la primera clase. Preparo para exámenes internacionales de nivel B1 y B2." },
+    { "id": "d03", "nombre": "Lucía P.", "materias": ["Química", "Biología"], "niveles": ["Colegio", "Preuniversitario"], "tarifa": 16, "modalidades": ["presencial"], "zona": "floresta", "radioKm": 4, "experiencia": 5, "valoracion": 4.9, "resenas": 17, "bio": "Uso esquemas y modelos para que la química deje de ser abstracta. Refuerzo para supletorios y exámenes de ingreso." },
+    { "id": "d04", "nombre": "Mateo G.", "materias": ["Programación", "Excel"], "niveles": ["Universitario", "Adultos"], "tarifa": 20, "modalidades": ["virtual"], "zona": "inca", "radioKm": 0, "experiencia": 4, "valoracion": 4.6, "resenas": 12, "bio": "Python desde cero, automatización de hojas de cálculo y bases de análisis de datos con casos de trabajo reales." },
+    { "id": "d05", "nombre": "Sofía C.", "materias": ["Lenguaje y Literatura", "Redacción"], "niveles": ["Escolar", "Colegio"], "tarifa": 12, "modalidades": ["presencial"], "zona": "cotocollao", "radioKm": 3, "experiencia": 7, "valoracion": 4.8, "resenas": 26, "bio": "Comprensión lectora, ortografía y redacción de ensayos. Trabajo con lecturas adecuadas a la edad del estudiante." },
+    { "id": "d06", "nombre": "Javier T.", "materias": ["Matemáticas"], "niveles": ["Escolar", "Colegio"], "tarifa": 10, "modalidades": ["presencial"], "zona": "chillogallo", "radioKm": 5, "experiencia": 3, "valoracion": 4.5, "resenas": 9, "bio": "Refuerzo de matemáticas básicas y álgebra con paciencia y práctica guiada. Tareas dirigidas por la tarde." },
+    { "id": "d07", "nombre": "Valeria N.", "materias": ["Inglés", "Francés"], "niveles": ["Universitario", "Adultos"], "tarifa": 18, "modalidades": ["presencial", "virtual"], "zona": "mariscal", "radioKm": 4, "experiencia": 9, "valoracion": 4.9, "resenas": 40, "bio": "Idiomas para el trabajo: entrevistas, presentaciones y correos. Clases a medida según tu objetivo profesional." },
+    { "id": "d08", "nombre": "Diego A.", "materias": ["Física", "Cálculo"], "niveles": ["Preuniversitario", "Universitario"], "tarifa": 22, "modalidades": ["presencial", "virtual"], "zona": "inaquito", "radioKm": 6, "experiencia": 10, "valoracion": 4.8, "resenas": 35, "bio": "Cálculo diferencial e integral, física general y preparación para materias de primeros semestres de ingeniería." },
+    { "id": "d09", "nombre": "Gabriela S.", "materias": ["Música (piano)"], "niveles": ["Escolar", "Adultos"], "tarifa": 18, "modalidades": ["presencial"], "zona": "tumbaco", "radioKm": 6, "experiencia": 12, "valoracion": 5.0, "resenas": 14, "bio": "Piano para principiantes de todas las edades: lectura musical, técnica y repertorio que te motive." },
+    { "id": "d10", "nombre": "Andrés L.", "materias": ["Contabilidad", "Estadística"], "niveles": ["Universitario", "Adultos"], "tarifa": 17, "modalidades": ["virtual"], "zona": "conocoto", "radioKm": 0, "experiencia": 6, "valoracion": 4.6, "resenas": 11, "bio": "Contabilidad general, estados financieros y estadística aplicada para estudiantes universitarios." },
+    { "id": "d11", "nombre": "Paola E.", "materias": ["Matemáticas", "Tareas dirigidas"], "niveles": ["Escolar"], "tarifa": 10, "modalidades": ["presencial"], "zona": "quitumbe", "radioKm": 4, "experiencia": 5, "valoracion": 4.7, "resenas": 19, "bio": "Acompañamiento escolar con rutinas claras. Comunicación constante con el representante sobre el avance." },
+    { "id": "d12", "nombre": "Ricardo H.", "materias": ["Historia", "Estudios Sociales"], "niveles": ["Colegio", "Preuniversitario"], "tarifa": 13, "modalidades": ["presencial", "virtual"], "zona": "centro", "radioKm": 4, "experiencia": 11, "valoracion": 4.7, "resenas": 22, "bio": "Historia del Ecuador y universal con líneas de tiempo, mapas y preguntas tipo examen." },
+    { "id": "d13", "nombre": "Fernanda B.", "materias": ["Inglés"], "niveles": ["Escolar", "Colegio"], "tarifa": 13, "modalidades": ["presencial"], "zona": "carcelen", "radioKm": 5, "experiencia": 4, "valoracion": 4.6, "resenas": 10, "bio": "Inglés con juegos y canciones para niños, y gramática ordenada para colegio." },
+    { "id": "d14", "nombre": "Tomás Q.", "materias": ["Química", "Matemáticas"], "niveles": ["Preuniversitario", "Universitario"], "tarifa": 19, "modalidades": ["presencial", "virtual"], "zona": "magdalena", "radioKm": 5, "experiencia": 7, "valoracion": 4.8, "resenas": 16, "bio": "Química general y orgánica, estequiometría y preparación para el examen de ingreso a la universidad." }
+  ]
+}

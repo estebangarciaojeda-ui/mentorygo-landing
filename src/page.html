@@ -1,0 +1,1125 @@
+<title>MentoryGo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Prototipo navegable de MentoryGo: encuentra un profesor particular cerca de ti en Quito. Datos y reservas ficticios.">
+<link rel="icon" type="image/png" href="{{ICON}}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: valle andino. Curvas de nivel del Pichincha como motivo; mapa esquemático de Quito como pieza central; tarjetas sobrias alrededor. */
+:root{
+  --paper:#F4F7FB; --surface:#FFFFFF; --sunk:#EAF0F7; --ink:#0A1A33; --muted:#4E5D75; --line:#D9E2EE;
+  --navy:#0B2A5B; --accent:#1366D6; --accent-ink:#FFFFFF; --sky:#1FA2FF; --accent-soft:#E3EEFD;
+  --fict:#9A4A00; --fict-bg:#FFF2DC; --fict-line:#E9B872;
+  --ok:#11734F; --ok-bg:#E0F4EC; --warn:#9A4A00; --warn-bg:#FFF2DC; --bad:#B42318; --bad-bg:#FDE7E5;
+  --map-bg:#E8F0F8; --map-land:#F3F7FB; --contour:#C6D5E6; --contour-strong:#A9BED6; --park:#D3EBDD;
+  --shadow:0 1px 2px rgba(10,26,51,.06),0 8px 24px rgba(10,26,51,.08);
+  --band:#0B2A5B; --band-fg:#F4F7FB; --pin-p:#0B2A5B;
+  --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --f-body:"Instrument Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+  --r-sm:8px; --r-md:14px; --r-lg:22px;
+  --gut-l:max(16px, env(safe-area-inset-left, 0px)); --gut-r:max(16px, env(safe-area-inset-right, 0px));
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#07111F; --surface:#0E1A2C; --sunk:#0B1626; --ink:#E6EEF9; --muted:#9DAEC6; --line:#20324B;
+  --navy:#D3E3FF; --accent:#4FA3FF; --accent-ink:#04122A; --sky:#62C3FF; --accent-soft:#12284A;
+  --fict:#F4B860; --fict-bg:#2A1D08; --fict-line:#6B4A16;
+  --ok:#4DD4A0; --ok-bg:#0C2A20; --warn:#F4B860; --warn-bg:#2A1D08; --bad:#FF8A80; --bad-bg:#2E1212;
+  --map-bg:#0A1525; --map-land:#0E1B2E; --contour:#1A2E48; --contour-strong:#25405F; --park:#123426;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); --band:#10284F; --band-fg:#EEF4FC; --pin-p:#6F8DC4; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#07111F; --surface:#0E1A2C; --sunk:#0B1626; --ink:#E6EEF9; --muted:#9DAEC6; --line:#20324B;
+  --navy:#D3E3FF; --accent:#4FA3FF; --accent-ink:#04122A; --sky:#62C3FF; --accent-soft:#12284A;
+  --fict:#F4B860; --fict-bg:#2A1D08; --fict-line:#6B4A16;
+  --ok:#4DD4A0; --ok-bg:#0C2A20; --warn:#F4B860; --warn-bg:#2A1D08; --bad:#FF8A80; --bad-bg:#2E1212;
+  --map-bg:#0A1525; --map-land:#0E1B2E; --contour:#1A2E48; --contour-strong:#25405F; --park:#123426;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); --band:#10284F; --band-fg:#EEF4FC; --pin-p:#6F8DC4; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:120px}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--surface)}
+h1,h2,h3,h4{font-family:var(--f-display);color:var(--navy);line-height:1.1;margin:0;text-wrap:balance;letter-spacing:-.015em}
+h2{font-size:clamp(1.8rem,1.2rem + 2.2vw,2.75rem);font-weight:800}
+h3{font-size:1.2rem;font-weight:700}
+p{margin:0}
+a{color:var(--accent)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--sky);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1200px;margin-inline:auto;padding-left:var(--gut-l);padding-right:var(--gut-r)}
+.eyebrow{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:500}
+.lead{font-size:1.1rem;color:var(--muted);max-width:62ch}
+.mono{font-family:var(--f-mono);font-size:.85em}
+.tnum{font-variant-numeric:tabular-nums}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5em;border:1px solid transparent;border-radius:999px;padding:.72em 1.25em;font-weight:600;cursor:pointer;text-decoration:none;transition:transform .15s ease,background .15s ease,border-color .15s ease;line-height:1.2;white-space:nowrap}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--accent);color:var(--accent-ink)}
+.btn-primary:hover{filter:brightness(1.08)}
+.btn-ghost{background:transparent;border-color:var(--line);color:var(--ink)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm{padding:.5em .9em;font-size:.88rem}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+
+/* Demo ribbon + header */
+.ribbon{background:var(--fict-bg);color:var(--fict);border-bottom:1px solid var(--fict-line);font-size:.86rem}
+.ribbon .wrap{display:flex;gap:.6rem;align-items:center;padding-block:.5rem;flex-wrap:wrap}
+.ribbon strong{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.1em;border:1px dashed currentColor;border-radius:4px;padding:.1em .45em}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;align-items:center;gap:1.25rem;padding-block:.7rem}
+.brand{display:flex;align-items:center;gap:.55rem;text-decoration:none;font-family:"Montserrat",var(--f-display);font-weight:800;font-size:1.35rem;letter-spacing:-.02em;color:var(--navy)}
+.brand img{width:38px;height:38px}
+.brand .go{color:var(--sky)}
+nav.main{display:flex;gap:1.1rem;margin-left:auto;font-size:.94rem}
+nav.main a{color:var(--muted);text-decoration:none;font-weight:500}
+nav.main a:hover{color:var(--accent)}
+.theme-btn{border:1px solid var(--line);background:transparent;border-radius:999px;width:38px;height:38px;cursor:pointer;display:grid;place-items:center;color:var(--muted)}
+@media (max-width:920px){nav.main{display:none}.top .btn-primary{margin-left:auto}}
+
+/* Hero */
+.hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+.hero-topo{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.hero-topo path{fill:none;stroke:var(--contour);stroke-width:1.1}
+.hero .wrap{position:relative;display:grid;grid-template-columns:1.1fr .9fr;gap:3rem;align-items:center;padding-block:4.5rem 4rem}
+.hero h1{font-size:clamp(2.5rem,1.4rem + 4.6vw,4.6rem);font-weight:800;letter-spacing:-.035em;line-height:.98}
+.hero h1 em{font-style:normal;color:var(--accent);position:relative;white-space:nowrap}
+.hero .lead{margin-top:1.25rem}
+.quick{margin-top:2rem;display:grid;grid-template-columns:1fr 1fr auto;gap:.5rem;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:.5rem;box-shadow:var(--shadow);max-width:620px}
+.quick label{display:flex;flex-direction:column;padding:.35rem .75rem;border-radius:12px;min-width:0}
+.quick label:hover{background:var(--sunk)}
+.quick span{font-size:.72rem;font-family:var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.quick select{border:0;background:transparent;font-weight:600;padding:.15rem 0;min-width:0;width:100%;cursor:pointer}
+.quick .btn{border-radius:12px}
+.facts{display:flex;flex-wrap:wrap;gap:.5rem 1.25rem;margin-top:1.5rem;color:var(--muted);font-size:.9rem}
+.facts li{display:flex;align-items:center;gap:.45rem}
+.facts li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--sky)}
+.facts{list-style:none;padding:0}
+.hero-card{position:relative;justify-self:center;width:min(380px,100%)}
+.phone{background:var(--surface);border:1px solid var(--line);border-radius:34px;padding:14px;box-shadow:var(--shadow)}
+.phone-screen{border-radius:24px;overflow:hidden;background:var(--sunk);border:1px solid var(--line)}
+.phone-map{height:190px;position:relative}
+.phone-map svg{width:100%;height:100%;display:block}
+.phone-body{padding:14px;display:grid;gap:10px}
+.mini-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center}
+.state-chip{font-family:var(--f-mono);font-size:.72rem;padding:.25em .6em;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+@media (max-width:900px){.hero .wrap{grid-template-columns:1fr;padding-block:3rem}.quick{grid-template-columns:1fr}.hero-card{display:none}}
+
+/* Avatars & badges */
+.avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-family:var(--f-display);color:#fff;flex:none;font-size:1rem}
+.badge-fict{display:inline-flex;align-items:center;gap:.3em;font-family:var(--f-mono);font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--fict);background:var(--fict-bg);border:1px dashed var(--fict-line);padding:.2em .5em;border-radius:5px;white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:.3em;font-size:.78rem;font-weight:600;padding:.2em .6em;border-radius:999px;background:var(--sunk);color:var(--muted);border:1px solid var(--line);white-space:nowrap}
+.chip.pres{color:var(--accent);background:var(--accent-soft);border-color:transparent}
+.chip.virt{color:var(--ok);background:var(--ok-bg);border-color:transparent}
+
+/* Sections */
+section.block{padding-block:5rem}
+.sec-head{display:grid;gap:.9rem;max-width:760px;margin-bottom:2.5rem}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;counter-reset:s}
+.step{position:relative;padding:1.5rem 1.4rem;border-top:2px solid var(--navy)}
+.step .n{font-family:var(--f-mono);color:var(--accent);font-size:.8rem}
+.step h3{margin:.5rem 0 .5rem}
+.step p{color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:4px;background:var(--surface);gap:4px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:.45em 1em;border-radius:999px;cursor:pointer;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--navy);color:var(--paper)}
+@media (max-width:800px){.steps{grid-template-columns:1fr}}
+
+/* Search app */
+#buscar{background:var(--surface);border-block:1px solid var(--line)}
+.filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.75rem 1rem;background:var(--paper);border:1px solid var(--line);border-radius:var(--r-lg);padding:1.1rem}
+.field{display:grid;gap:.3rem;min-width:0}
+.field>span,.field>label{font-size:.78rem;font-weight:600;color:var(--muted)}
+.field select,.field input[type=text],.field input[type=email],.field input[type=number],.field textarea{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:.55rem .7rem;min-width:0}
+.field input[type=range]{width:100%;accent-color:var(--accent)}
+.range-out{font-family:var(--f-mono);font-size:.82rem;color:var(--ink)}
+.filters .row-actions{grid-column:1/-1;display:flex;gap:.75rem;flex-wrap:wrap;align-items:center;justify-content:space-between;border-top:1px dashed var(--line);padding-top:.8rem}
+.mod-seg button{font-size:.88rem;padding:.35em .8em}
+@media (max-width:980px){.filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.filters{grid-template-columns:1fr}}
+
+.results-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:1.25rem;margin-top:1.25rem;align-items:start}
+@media (max-width:980px){.results-grid{grid-template-columns:1fr}}
+.map-card{position:sticky;top:96px;background:var(--map-bg);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
+@media (max-width:980px){.map-card{position:relative;top:0}}
+.map-card svg{display:block;width:100%;height:auto;max-height:620px}
+.map-legend{display:flex;flex-wrap:wrap;gap:.4rem 1rem;padding:.7rem 1rem;font-size:.8rem;color:var(--muted);border-top:1px solid var(--line);background:var(--surface)}
+.map-legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:.35rem;vertical-align:middle}
+.pin{cursor:pointer;transition:transform .2s ease}
+.pin circle.dot{stroke:var(--surface);stroke-width:2.5}
+.pin.dim{opacity:.18}
+.pin:hover circle.dot,.pin.sel circle.dot,.pin:focus-visible circle.dot{stroke:var(--ink);stroke-width:3}
+.pin:focus{outline:none}
+.zone-label{font-family:var(--f-body);font-size:10.5px;fill:var(--muted);font-weight:500}
+.map-tip{font-family:var(--f-body);font-size:12px;font-weight:600}
+
+.res-head{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:.75rem}
+.res-count{font-weight:600}
+.res-list{display:grid;gap:.75rem}
+.tcard{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:.9rem;align-items:start;padding:1rem;border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface);cursor:pointer;transition:border-color .15s ease,box-shadow .15s ease,transform .15s ease;text-align:left;width:100%}
+.tcard:hover,.tcard.sel{border-color:var(--accent);box-shadow:var(--shadow)}
+.tcard h3{font-size:1.08rem;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+.tcard .subj{color:var(--ink);font-weight:500;margin-top:.15rem}
+.tcard .meta{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.55rem}
+.tcard .price{text-align:right;display:grid;gap:.15rem}
+.tcard .price b{font-family:var(--f-display);font-size:1.35rem;color:var(--navy)}
+.tcard .price small{color:var(--muted);font-size:.78rem}
+.dist{font-family:var(--f-mono);font-size:.8rem;color:var(--muted)}
+.stars{color:var(--warn);font-size:.85rem}
+.skeleton{height:96px;border-radius:var(--r-md);background:linear-gradient(90deg,var(--sunk),var(--paper),var(--sunk));background-size:200% 100%;animation:sh 1s linear infinite}
+@keyframes sh{to{background-position:-200% 0}}
+.empty{border:1px dashed var(--line);border-radius:var(--r-md);padding:2rem;text-align:center;display:grid;gap:.75rem;justify-items:center;color:var(--muted)}
+@media (max-width:520px){.tcard{grid-template-columns:auto minmax(0,1fr)}.tcard .price{grid-column:2;text-align:left;display:flex;gap:.5rem;align-items:baseline}}
+
+/* Bookings panel */
+.bk-panel{margin-top:2.5rem;border-top:1px solid var(--line);padding-top:2rem}
+.bk-list{display:grid;gap:.75rem;margin-top:1rem}
+.bk{border:1px solid var(--line);border-radius:var(--r-md);padding:1rem;background:var(--paper);display:grid;gap:.75rem}
+.bk-top{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:center}
+.flow{display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;font-family:var(--f-mono);font-size:.72rem}
+.flow span{padding:.25em .55em;border-radius:6px;border:1px solid var(--line);color:var(--muted);background:var(--surface)}
+.flow span.done{color:var(--ok);border-color:transparent;background:var(--ok-bg)}
+.flow span.now{color:var(--accent-ink);background:var(--accent);border-color:transparent}
+.flow span.off{color:var(--bad);background:var(--bad-bg);border-color:transparent}
+.flow i{color:var(--muted);font-style:normal}
+.bk-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+.st-requested,.st-accepted,.st-awaiting_payment{color:var(--warn)}
+.st-confirmed,.st-completed{color:var(--ok)}
+.st-cancelled,.st-disputed,.st-refunded{color:var(--bad)}
+.note{font-size:.84rem;color:var(--muted)}
+.log{font-family:var(--f-mono);font-size:.72rem;color:var(--muted);display:grid;gap:.15rem;max-height:7.5em;overflow:auto}
+
+/* Dialogs */
+dialog{border:0;padding:0;border-radius:var(--r-lg);background:var(--surface);color:var(--ink);width:min(720px,calc(100vw - 32px));max-height:calc(100dvh - 32px);box-shadow:0 30px 80px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(5,14,30,.55);backdrop-filter:blur(3px)}
+.dlg-head{display:flex;gap:1rem;align-items:flex-start;padding:1.4rem 1.4rem 1rem;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:2}
+.dlg-head h3{font-size:1.4rem}
+.dlg-body{padding:1.25rem 1.4rem 1.5rem;display:grid;gap:1.25rem}
+.dlg-close{margin-left:auto;border:1px solid var(--line);background:transparent;border-radius:50%;width:36px;height:36px;cursor:pointer;font-size:1.1rem;flex:none}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.75rem}
+.kv div{background:var(--paper);border-radius:10px;padding:.6rem .8rem;border:1px solid var(--line)}
+.kv dt{font-size:.75rem;color:var(--muted)}
+.kv dd{margin:0;font-weight:600}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.5rem}
+.day h4{font-family:var(--f-body);font-size:.8rem;color:var(--muted);font-weight:600;margin-bottom:.35rem;text-transform:capitalize}
+.day-row{display:flex;flex-wrap:wrap;gap:.35rem}
+.slot{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:.35em .6em;font-family:var(--f-mono);font-size:.8rem;cursor:pointer}
+.slot:hover{border-color:var(--accent)}
+.slot[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.slot.taken{text-decoration:line-through;opacity:.45;cursor:not-allowed}
+.days{display:grid;gap:.85rem}
+.notice{border-radius:12px;padding:.8rem 1rem;font-size:.88rem;border:1px solid var(--line);background:var(--paper)}
+.notice.warn{background:var(--warn-bg);color:var(--warn);border-color:var(--fict-line)}
+.notice.err{background:var(--bad-bg);color:var(--bad);border-color:transparent}
+.sum{display:grid;gap:.35rem;font-variant-numeric:tabular-nums}
+.sum div{display:flex;justify-content:space-between;gap:1rem}
+.sum .tot{border-top:1px solid var(--line);padding-top:.5rem;font-weight:700}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.85rem}
+@media (max-width:560px){.form-grid{grid-template-columns:1fr}}
+.radio-row{display:flex;flex-wrap:wrap;gap:.5rem}
+.radio-row label{display:flex;align-items:center;gap:.4rem;border:1px solid var(--line);border-radius:10px;padding:.45rem .7rem;cursor:pointer;font-size:.92rem}
+.radio-row input{accent-color:var(--accent)}
+.rate{display:flex;gap:.25rem}
+.rate button{background:none;border:0;font-size:1.5rem;cursor:pointer;color:var(--line);padding:0 .1rem}
+.rate button.on{color:var(--warn)}
+
+/* Tutors, trust */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start}
+@media (max-width:900px){.split{grid-template-columns:1fr}}
+.checks{list-style:none;padding:0;margin:1.5rem 0 0;display:grid;gap:.9rem}
+.checks li{display:grid;grid-template-columns:28px 1fr;gap:.6rem}
+.checks li::before{content:"";width:22px;height:22px;border-radius:50%;background:var(--accent-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231366D6' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5L20 7'/%3E%3C/svg%3E") center/14px no-repeat;margin-top:2px}
+.checks b{color:var(--navy)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:1.5rem;box-shadow:var(--shadow);display:grid;gap:1rem}
+.trust-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
+.trust-grid article{background:var(--surface);padding:1.5rem;display:grid;gap:.5rem;align-content:start}
+.trust-grid article p{color:var(--muted);font-size:.95rem}
+.trust-grid .tag{font-family:var(--f-mono);font-size:.7rem;color:var(--accent);letter-spacing:.08em;text-transform:uppercase}
+@media (max-width:900px){.trust-grid{grid-template-columns:1fr 1fr}}
+@media (max-width:600px){.trust-grid{grid-template-columns:1fr}}
+
+/* Simulator */
+#simulador{background:var(--band);color:var(--band-fg);--paper:var(--band-fg)}
+#simulador h2,#simulador h3{color:var(--band-fg)}
+#simulador .lead{color:color-mix(in srgb,var(--paper) 75%,transparent)}
+#simulador .eyebrow{color:var(--sky)}
+.sim{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:2rem}
+@media (max-width:900px){.sim{grid-template-columns:1fr}}
+.sim-in{display:grid;gap:1rem;background:color-mix(in srgb,var(--paper) 7%,transparent);border:1px solid color-mix(in srgb,var(--paper) 18%,transparent);border-radius:var(--r-lg);padding:1.4rem}
+.sim-in .field>span,.sim-in .field>label{color:color-mix(in srgb,var(--paper) 78%,transparent)}
+.sim-row{display:grid;grid-template-columns:minmax(0,1fr) 96px;gap:.75rem;align-items:center}
+.sim-in input[type=number]{background:transparent;color:var(--paper);border:1px solid color-mix(in srgb,var(--paper) 30%,transparent);border-radius:8px;padding:.4rem .5rem;font-family:var(--f-mono);text-align:right;width:100%}
+.sim-in input[type=range]{accent-color:var(--sky)}
+.sim-out{display:grid;gap:1rem;align-content:start}
+.big{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+.big div{border-top:1px solid color-mix(in srgb,var(--paper) 25%,transparent);padding-top:.75rem}
+.big dt{font-size:.82rem;color:color-mix(in srgb,var(--paper) 70%,transparent)}
+.big dd{margin:.2rem 0 0;font-family:var(--f-display);font-weight:700;font-size:clamp(1.4rem,1rem + 1.6vw,2.2rem);font-variant-numeric:tabular-nums;color:var(--paper)}
+.big dd.neg{color:#FF9C92}
+.bar{display:flex;height:22px;border-radius:6px;overflow:hidden;background:color-mix(in srgb,var(--paper) 10%,transparent)}
+.bar span{display:block;height:100%;transition:width .4s ease}
+.bar-legend{display:flex;flex-wrap:wrap;gap:.5rem 1.25rem;font-size:.82rem;color:color-mix(in srgb,var(--paper) 80%,transparent)}
+.bar-legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:.35rem;vertical-align:middle}
+.sim-note{font-size:.82rem;color:color-mix(in srgb,var(--paper) 65%,transparent);border-left:2px solid var(--sky);padding-left:.75rem}
+
+/* Roadmap */
+.road{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:.5rem;counter-reset:r}
+.road li{list-style:none;border-top:3px solid var(--line);padding-top:.75rem;display:grid;gap:.35rem;align-content:start}
+.road li.done{border-color:var(--ok)}
+.road li.now{border-color:var(--accent)}
+.road b{font-family:var(--f-display);color:var(--navy);font-size:.98rem;line-height:1.25}
+.road small{color:var(--muted);font-size:.8rem}
+.road .st{font-family:var(--f-mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.road li.done .st{color:var(--ok)} .road li.now .st{color:var(--accent)}
+@media (max-width:1000px){.road{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.road{padding:0;margin:0}
+
+/* CTA + footer */
+.cta{border-radius:28px;background:var(--surface);border:1px solid var(--line);padding:clamp(1.5rem,4vw,3rem);display:grid;grid-template-columns:1.1fr .9fr;gap:2rem;align-items:center;position:relative;overflow:hidden}
+@media (max-width:900px){.cta{grid-template-columns:1fr}}
+footer{border-top:1px solid var(--line);padding-block:2.5rem;color:var(--muted);font-size:.88rem}
+footer .wrap{display:grid;gap:1rem}
+
+/* Toast */
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--ink);color:var(--paper);padding:.8rem 1.1rem;border-radius:12px;box-shadow:var(--shadow);opacity:0;transition:opacity .25s ease,transform .25s ease;z-index:100;max-width:calc(100vw - 32px);font-size:.92rem}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+.reveal{animation:rise .6s ease both}
+@keyframes rise{from{transform:translateY(10px)}to{transform:none}}
+@keyframes pulse{0%{r:6;opacity:.7}100%{r:22;opacity:0}}
+.pulse{animation:pulse 2s ease-out infinite;fill:var(--sky)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+</style>
+
+<div class="ribbon" role="note">
+  <div class="wrap"><strong>DEMO</strong><span>Prototipo de presentación. Docentes, precios, valoraciones y reservas son <b>ficticios</b>. No se procesan pagos ni se guarda información personal.</span></div>
+</div>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#inicio" aria-label="MentoryGo, inicio"><img src="{{ICON}}" alt="" width="38" height="38"><span>Mentory<span class="go">Go</span></span></a>
+    <nav class="main" aria-label="Secciones">
+      <a href="#como-funciona">Cómo funciona</a>
+      <a href="#buscar">Buscar docentes</a>
+      <a href="#docentes">Para docentes</a>
+      <a href="#seguridad">Seguridad</a>
+      <a href="#simulador">Simulador</a>
+    </nav>
+    <button class="theme-btn" id="themeBtn" type="button" aria-label="Cambiar tema claro u oscuro" title="Cambiar tema">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+    <a class="btn btn-primary btn-sm" href="#buscar">Probar la demo</a>
+  </div>
+</header>
+
+<main id="inicio">
+<section class="hero">
+  <svg class="hero-topo" id="heroTopo" aria-hidden="true" preserveAspectRatio="xMidYMid slice"></svg>
+  <div class="wrap">
+    <div class="reveal">
+      <p class="eyebrow">Piloto en Quito · Clases particulares</p>
+      <h1 style="margin-top:.9rem">Un profe cerca de ti, <em>cuando lo necesitas.</em></h1>
+      <p class="lead">Encuentra un profesor cerca de ti, aprende a tu ritmo, enseña cuando quieras. MentoryGo conecta a estudiantes adultos y representantes con docentes particulares en su zona o por videollamada.</p>
+      <form class="quick" id="quickForm" aria-label="Búsqueda rápida">
+        <label><span>Materia</span><select id="qSubject"></select></label>
+        <label><span>Tu zona</span><select id="qZone"></select></label>
+        <button class="btn btn-primary" type="submit">Ver docentes</button>
+      </form>
+      <ul class="facts">
+        <li>Tarifas en USD fijadas por cada docente</li>
+        <li>Presencial o virtual</li>
+        <li>Horario de Ecuador (GMT−5)</li>
+      </ul>
+    </div>
+    <div class="hero-card reveal" aria-hidden="true">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="phone-map"><svg id="phoneMap" viewBox="0 0 320 190"></svg></div>
+          <div class="phone-body" id="phoneBody"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="como-funciona">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Cómo funciona</p>
+      <h2>De la búsqueda a la clase en tres pasos</h2>
+      <div class="seg" role="group" aria-label="Ver pasos para">
+        <button type="button" aria-pressed="true" data-howto="cliente">Busco clases</button>
+        <button type="button" aria-pressed="false" data-howto="docente">Quiero enseñar</button>
+      </div>
+    </div>
+    <div class="steps" id="steps" aria-live="polite"></div>
+  </div>
+</section>
+
+<section class="block" id="buscar">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Demo interactiva</p>
+      <h2>Docentes cerca de ti en Quito</h2>
+      <p class="lead">Filtra por materia, nivel, precio y modalidad. El mapa muestra zonas aproximadas por barrio, nunca la dirección del docente. Todos los perfiles son ficticios.</p>
+    </div>
+
+    <form class="filters" id="filters" aria-label="Filtros de búsqueda">
+      <div class="field"><label for="fZone">Tu zona</label><select id="fZone"></select></div>
+      <div class="field"><label for="fSubject">Materia</label><select id="fSubject"></select></div>
+      <div class="field"><label for="fLevel">Nivel</label><select id="fLevel"></select></div>
+      <div class="field"><label for="fSort">Ordenar por</label>
+        <select id="fSort"><option value="dist">Más cerca</option><option value="price">Menor precio</option><option value="rating">Mejor valoración (ficticia)</option></select></div>
+      <div class="field"><label for="fPrice">Precio máximo por hora: <output class="range-out tnum" id="oPrice" for="fPrice"></output></label><input type="range" id="fPrice" min="8" max="30" step="1" value="30"></div>
+      <div class="field"><label for="fRadius">Distancia máxima (presencial): <output class="range-out tnum" id="oRadius" for="fRadius"></output></label><input type="range" id="fRadius" min="1" max="20" step="1" value="8"></div>
+      <div class="field"><span id="modLbl">Modalidad</span>
+        <div class="seg mod-seg" role="group" aria-labelledby="modLbl">
+          <button type="button" data-mod="todas" aria-pressed="true">Todas</button>
+          <button type="button" data-mod="presencial" aria-pressed="false">Presencial</button>
+          <button type="button" data-mod="virtual" aria-pressed="false">Virtual</button>
+        </div></div>
+      <div class="field"><label for="fDay">Disponibilidad</label>
+        <select id="fDay"><option value="any">Cualquier día</option><option value="0">Hoy</option><option value="1">Mañana</option><option value="we">Fin de semana</option><option value="ev">Entre semana desde las 18:00</option></select></div>
+      <div class="row-actions">
+        <button class="btn btn-ghost btn-sm" type="button" id="geoBtn">Usar mi ubicación aproximada</button>
+        <span class="note" id="geoNote">La ubicación es opcional. Puedes elegir tu zona manualmente.</span>
+        <button class="btn btn-ghost btn-sm" type="reset" id="resetBtn">Limpiar filtros</button>
+      </div>
+    </form>
+
+    <div class="results-grid">
+      <div class="map-card">
+        <svg id="map" role="group" aria-label="Mapa esquemático de Quito con docentes ficticios"></svg>
+        <div class="map-legend">
+          <span><i style="background:var(--accent)"></i>Presencial y virtual</span>
+          <span><i style="background:var(--pin-p)"></i>Solo presencial</span>
+          <span><i style="background:var(--ok)"></i>Solo virtual</span>
+          <span>Mapa esquemático sin calles: posiciones aproximadas por barrio.</span>
+        </div>
+      </div>
+      <div>
+        <div class="res-head">
+          <p class="res-count" id="resCount" aria-live="polite"></p>
+          <span class="badge-fict">Datos ficticios</span>
+        </div>
+        <div class="res-list" id="resList"></div>
+      </div>
+    </div>
+
+    <div class="bk-panel" id="reservas">
+      <div class="res-head">
+        <div>
+          <h3>Tus reservas de prueba</h3>
+          <p class="note">Cada reserva recorre la máquina de estados del MVP. Los botones simulan lo que en producción hace el docente, el sistema o el administrador.</p>
+        </div>
+        <span class="badge-fict">Simulación</span>
+      </div>
+      <div class="bk-list" id="bkList"></div>
+      <details style="margin-top:1rem">
+        <summary style="cursor:pointer;font-weight:600">Ver reglas de la máquina de estados</summary>
+        <div style="overflow-x:auto;margin-top:.75rem">
+          <table id="smTable" style="border-collapse:collapse;font-size:.88rem;min-width:640px"></table>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="docentes">
+  <div class="wrap split">
+    <div>
+      <p class="eyebrow">Para docentes</p>
+      <h2 style="margin-top:.75rem">Enseña cuando quieras, cerca de casa</h2>
+      <p class="lead" style="margin-top:1rem">Tú decides tu tarifa por hora, las zonas donde das clases y tu horario. MentoryGo te ayuda a encontrar estudiantes y gestiona reservas y cobros.</p>
+      <ul class="checks">
+        <li><span><b>Tu tarifa, tus reglas.</b> Fijas el precio en USD por hora. La comisión de la plataforma se muestra antes de aceptar cada clase.</span></li>
+        <li><span><b>Zonas y radio de servicio.</b> Eliges barrios o un radio en kilómetros. Tu dirección exacta nunca se publica.</span></li>
+        <li><span><b>Agenda bajo control.</b> Aceptas o rechazas solicitudes y pausas tu perfil cuando lo necesites.</span></li>
+        <li><span><b>Verificación seria.</b> Revisamos identidad y títulos antes de mostrar la insignia de verificado. Tus documentos no son públicos.</span></li>
+      </ul>
+    </div>
+    <form class="panel" id="tutorForm" novalidate>
+      <div>
+        <h3>Registro de interés (simulado)</h3>
+        <p class="note" style="margin-top:.35rem">Este formulario no envía ni guarda datos. Sirve para mostrar el flujo de alta.</p>
+      </div>
+      <div class="form-grid">
+        <div class="field"><label for="tName">Nombre</label><input type="text" id="tName" autocomplete="off" placeholder="Ej.: María"></div>
+        <div class="field"><label for="tSubject">Materia principal</label><select id="tSubject"></select></div>
+        <div class="field"><label for="tZone">Zona donde enseñas</label><select id="tZone"></select></div>
+        <div class="field"><label for="tRate">Tarifa por hora (USD)</label><input type="number" id="tRate" min="5" max="100" step="1" value="15"></div>
+      </div>
+      <p class="note" id="tPreview" aria-live="polite"></p>
+      <div class="notice">Pasos siguientes en producción: verificar correo y teléfono +593, subir cédula y título para revisión manual, completar perfil y disponibilidad. Hasta aprobar la revisión, el perfil no aparece en búsquedas.</div>
+      <button class="btn btn-primary" type="submit">Simular registro</button>
+      <p class="note" id="tMsg" role="status"></p>
+    </form>
+  </div>
+</section>
+
+<section class="block" id="seguridad" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Confianza y seguridad</p>
+      <h2>Diseñado para familias y docentes</h2>
+      <p class="lead">Estas son las reglas de producto del MVP. Se implementan en el backend, no solo en la interfaz, y se diseñan conforme a la Ley Orgánica de Protección de Datos Personales del Ecuador.</p>
+    </div>
+    <div class="trust-grid">
+      <article><span class="tag">Menores</span><h3>El adulto responsable gestiona todo</h3><p>Los menores no tienen cuenta propia, no comparten ubicación y no hay chat privado entre docente y menor. El representante reserva, paga y acuerda el lugar.</p></article>
+      <article><span class="tag">Ubicación</span><h3>Zona aproximada, nunca la casa</h3><p>Mostramos barrio y distancia en línea recta aproximada. La dirección solo se comparte con la reserva confirmada y entre adultos.</p></article>
+      <article><span class="tag">Verificación</span><h3>Insignia solo tras revisión real</h3><p>Identidad y títulos se revisan manualmente. Los documentos se guardan cifrados y no se muestran en el perfil público.</p></article>
+      <article><span class="tag">Pagos</span><h3>Confirmado significa pagado</h3><p>Una clase pasa a confirmada solo cuando el servidor recibe la confirmación del proveedor de pagos. Nunca con una simple redirección del navegador.</p></article>
+      <article><span class="tag">Reseñas</span><h3>Solo de clases terminadas</h3><p>Cada reseña está ligada a una reserva completada. Las reseñas se pueden reportar y el equipo las modera.</p></article>
+      <article><span class="tag">Control</span><h3>Reportar, bloquear y borrar</h3><p>Cualquier usuario puede reportar o bloquear. Puedes pedir la eliminación de tu cuenta y datos según los plazos de retención aplicables.</p></article>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="simulador">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Simulador de ingresos</p>
+      <h2>¿Cuánto genera el modelo de comisión?</h2>
+      <p class="lead">Cambia los supuestos y mira el resultado mensual. Los valores iniciales son hipótesis de trabajo, no proyecciones validadas.</p>
+    </div>
+    <div class="sim">
+      <form class="sim-in" id="simForm" aria-label="Supuestos del simulador">
+        <div class="field"><label for="sTutors">Docentes activos</label><div class="sim-row"><input type="range" id="sTutorsR" min="5" max="500" step="5" value="40" aria-label="Docentes activos, deslizador"><input type="number" id="sTutors" min="1" max="5000" value="40"></div></div>
+        <div class="field"><label for="sClasses">Clases por docente a la semana</label><div class="sim-row"><input type="range" id="sClassesR" min="1" max="20" step="1" value="4" aria-label="Clases por semana, deslizador"><input type="number" id="sClasses" min="0" max="60" value="4"></div></div>
+        <div class="field"><label for="sHours">Horas por clase</label><div class="sim-row"><input type="range" id="sHoursR" min="1" max="3" step=".5" value="1.5" aria-label="Horas por clase, deslizador"><input type="number" id="sHours" min=".5" max="6" step=".5" value="1.5"></div></div>
+        <div class="field"><label for="sRate">Tarifa promedio por hora (USD)</label><div class="sim-row"><input type="range" id="sRateR" min="8" max="40" step="1" value="15" aria-label="Tarifa promedio, deslizador"><input type="number" id="sRate" min="1" max="200" value="15"></div></div>
+        <div class="field"><label for="sFee">Comisión de la plataforma (%)</label><div class="sim-row"><input type="range" id="sFeeR" min="0" max="30" step="1" value="15" aria-label="Comisión, deslizador"><input type="number" id="sFee" min="0" max="60" value="15"></div></div>
+        <div class="field"><label for="sGw">Costo de pasarela de pagos (% del cobro)</label><div class="sim-row"><input type="range" id="sGwR" min="0" max="10" step=".1" value="5" aria-label="Costo de pasarela, deslizador"><input type="number" id="sGw" min="0" max="20" step=".1" value="5"></div></div>
+        <div class="field"><label for="sFixed">Costos fijos mensuales (USD)</label><div class="sim-row"><input type="range" id="sFixedR" min="0" max="5000" step="50" value="300" aria-label="Costos fijos, deslizador"><input type="number" id="sFixed" min="0" max="100000" value="300"></div></div>
+      </form>
+      <div class="sim-out" aria-live="polite">
+        <dl class="big">
+          <div><dt>Valor de clases al mes</dt><dd id="oGmv"></dd></div>
+          <div><dt>Comisión bruta de la plataforma</dt><dd id="oFee"></dd></div>
+          <div><dt>Resultado mensual después de pasarela y costos fijos</dt><dd id="oNet"></dd></div>
+          <div><dt>Ingreso promedio por docente al mes</dt><dd id="oTutor"></dd></div>
+        </dl>
+        <div>
+          <p class="note" style="color:inherit;opacity:.8;margin-bottom:.5rem">Reparto de cada dólar cobrado</p>
+          <div class="bar" id="oBar" role="img" aria-label=""></div>
+          <div class="bar-legend" style="margin-top:.6rem">
+            <span><i style="background:var(--sky)"></i>Docentes</span>
+            <span><i style="background:#F4B860"></i>Plataforma</span>
+            <span><i style="background:#FF9C92"></i>Pasarela</span>
+          </div>
+        </div>
+        <p class="sim-note" id="oHours"></p>
+        <p class="sim-note">La comisión del 15 % es una hipótesis inicial, no una condición contractual. El costo de pasarela es un valor de ejemplo: confirma la tarifa real con el proveedor (por ejemplo, PayPhone) antes de usarla. Montos sin IVA; el tratamiento tributario y quién emite comprobantes se define con asesoría contable.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="hoja-de-ruta">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Hoja de ruta</p>
+      <h2>Del prototipo a Google Play</h2>
+      <p class="lead">El estado de cada fase es real a la fecha de esta demo.</p>
+    </div>
+    <ol class="road">
+      <li class="done"><span class="st">Hecho</span><b>Definición del producto</b><small>Roles, alcance del MVP, hechos y supuestos</small></li>
+      <li class="now"><span class="st">Esta demo</span><b>Landing interactiva</b><small>Búsqueda, mapa, perfiles y reserva simulada</small></li>
+      <li><span class="st">En curso</span><b>App Android</b><small>Flutter con datos de demostración</small></li>
+      <li><span class="st">Pendiente</span><b>Backend y base de datos</b><small>Supabase, PostGIS, RLS y pruebas</small></li>
+      <li><span class="st">Pendiente</span><b>MVP por módulos</b><small>Acceso, búsqueda, perfil, agenda, reservas, panel</small></li>
+      <li><span class="st">Pendiente</span><b>Pagos reales</b><small>Solo con sandbox y condiciones comerciales aprobadas</small></li>
+      <li><span class="st">Pendiente</span><b>Publicación</b><small>Pruebas cerradas y revisión en Google Play</small></li>
+    </ol>
+  </div>
+</section>
+
+<section class="block" style="padding-top:0">
+  <div class="wrap">
+    <div class="cta">
+      <div>
+        <p class="eyebrow">Lista de espera</p>
+        <h2 style="margin-top:.75rem">Sé parte del piloto en Quito</h2>
+        <p class="lead" style="margin-top:.9rem">Buscamos familias, estudiantes y docentes que quieran probar MentoryGo en sus primeras semanas.</p>
+      </div>
+      <form class="panel" id="waitForm" style="box-shadow:none" novalidate>
+        <div class="field"><span id="roleLbl">Me interesa como</span>
+          <div class="radio-row" role="radiogroup" aria-labelledby="roleLbl">
+            <label><input type="radio" name="role" value="familia" checked> Familia o estudiante</label>
+            <label><input type="radio" name="role" value="docente"> Docente</label>
+          </div></div>
+        <div class="field"><label for="wEmail">Correo electrónico</label><input type="email" id="wEmail" placeholder="nombre@correo.com" autocomplete="off"></div>
+        <button class="btn btn-primary" type="submit">Unirme (simulado)</button>
+        <p class="note" id="wMsg" role="status">En esta demo no se envía ni se guarda el correo.</p>
+      </form>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="#inicio" style="font-size:1.1rem"><img src="{{ICON}}" alt="" width="30" height="30" style="width:30px;height:30px"><span>Mentory<span class="go">Go</span></span></a>
+    <p>MentoryGo es un nombre de trabajo y requiere búsqueda de marcas en SENADI y verificación de dominios antes de usarse comercialmente.</p>
+    <p>Prototipo de demostración. Todos los docentes, valoraciones, precios, disponibilidades y reservas son ficticios y no representan a personas reales. No se procesan pagos. El mapa es esquemático, no usa servicios externos y las distancias son aproximadas en línea recta entre barrios.</p>
+    <p>© 2026 · Quito, Ecuador</p>
+  </div>
+</footer>
+
+<dialog id="profileDlg" aria-labelledby="pdName"></dialog>
+<dialog id="bookDlg" aria-labelledby="bdTitle"></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const DATA = {{DATA}};
+(function(){
+"use strict";
+const TZ = "America/Guayaquil";
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const money = new Intl.NumberFormat("es-EC",{style:"currency",currency:"USD",maximumFractionDigits:2});
+const money0 = new Intl.NumberFormat("es-EC",{style:"currency",currency:"USD",maximumFractionDigits:0});
+const num1 = new Intl.NumberFormat("es-EC",{maximumFractionDigits:1});
+const ZONES = Object.fromEntries(DATA.zonas.map(z => [z.id, z]));
+const TUTORS = DATA.docentes;
+const SUBJECTS = Array.from(new Set(TUTORS.flatMap(t => t.materias))).sort((a,b)=>a.localeCompare(b,"es"));
+const store = {
+  get(k, d){ try { const v = localStorage.getItem("mentorygo:"+k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem("mentorygo:"+k, JSON.stringify(v)); } catch(e){} }
+};
+
+/* ---------- Seeded random for deterministic fictitious availability ---------- */
+function rng(seed){ let s = 0; for (const ch of seed) s = (s*31 + ch.charCodeAt(0)) >>> 0; return () => { s = (s*1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+
+/* ---------- Time helpers (Ecuador has no DST: UTC-5) ---------- */
+function ecNow(){ return new Date(Date.now() - 5*3600e3); } // fields read with getUTC* = Ecuador wall clock
+function dayInfo(offset){
+  const d = ecNow(); d.setUTCHours(0,0,0,0); d.setUTCDate(d.getUTCDate()+offset);
+  const label = new Intl.DateTimeFormat("es-EC",{weekday:"long", day:"numeric", month:"short", timeZone:"UTC"}).format(d);
+  return { date: d.toISOString().slice(0,10), dow: d.getUTCDay(), label: offset===0 ? "hoy, "+label.split(", ").slice(-1)[0] : offset===1 ? "mañana, "+label.split(", ").slice(-1)[0] : label };
+}
+const HOURS = [8,10,14,16,18,19];
+TUTORS.forEach(t => {
+  const r = rng(t.id);
+  t.slots = [];
+  for (let d=0; d<7; d++){
+    const info = dayInfo(d);
+    HOURS.forEach(h => {
+      if (r() < 0.33) {
+        if (d===0 && h <= ecNow().getUTCHours()+1) return; // no past slots today
+        t.slots.push({ date: info.date, day: d, dow: info.dow, hour: h, key: info.date+"T"+String(h).padStart(2,"0")+":00" });
+      }
+    });
+  }
+  t.color = ["#1366D6","#0B2A5B","#11734F","#7A3FB0","#B4541F","#0E7C86"][Math.floor(r()*6)];
+  t.initials = t.nombre.split(" ").map(p=>p[0]).join("").slice(0,2);
+  // display jitter around the neighbourhood centroid (never a real address)
+  t.jx = (r()-.5)*0.9; t.jy = (r()-.5)*0.9;
+});
+
+/* ---------- Geo ---------- */
+function haversineKm(a, b){
+  const R = 6371, rad = Math.PI/180;
+  const dLat = (b.lat-a.lat)*rad, dLon = (b.lon-a.lon)*rad;
+  const h = Math.sin(dLat/2)**2 + Math.cos(a.lat*rad)*Math.cos(b.lat*rad)*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+const BBOX = { w:-78.595, e:-78.375, n:-0.070, s:-0.320 };
+const PXKM = 20;
+const MAP_W = Math.round((BBOX.e-BBOX.w)*111.32*PXKM), MAP_H = Math.round((BBOX.n-BBOX.s)*110.57*PXKM);
+const proj = p => ({ x:(p.lon-BBOX.w)*111.32*PXKM, y:(BBOX.n-p.lat)*110.57*PXKM });
+
+/* ---------- Topographic contour generator (decorative) ---------- */
+function ring(cx, cy, rx, ry, seed, wob){
+  const r = rng(seed), k1 = r()*6, k2 = r()*6, a1 = .06+r()*wob, a2 = .04+r()*wob;
+  let d = "";
+  for (let i=0;i<=72;i++){
+    const t = i/72*Math.PI*2;
+    const f = 1 + a1*Math.sin(3*t+k1) + a2*Math.sin(5*t+k2);
+    const x = cx + Math.cos(t)*rx*f, y = cy + Math.sin(t)*ry*f;
+    d += (i?"L":"M")+x.toFixed(1)+" "+y.toFixed(1);
+  }
+  return d+"Z";
+}
+function topo(svg, w, h, centers){
+  svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  let out = "";
+  centers.forEach((c, ci) => { for (let i=1;i<=c.n;i++) out += `<path d="${ring(c.x, c.y, c.r*i, c.r*i*c.k, "c"+ci+"_"+i, .05)}"/>`; });
+  svg.innerHTML = out;
+}
+topo($("#heroTopo"), 1400, 700, [{x:1250,y:120,r:70,k:.8,n:9},{x:80,y:690,r:60,k:.7,n:6}]);
+
+/* ---------- Populate selects ---------- */
+function fill(sel, items, first){ sel.innerHTML = (first ? `<option value="">${first}</option>` : "") + items.map(([v,l]) => `<option value="${esc(v)}">${esc(l)}</option>`).join(""); }
+const zoneOpts = DATA.zonas.slice().sort((a,b)=>a.nombre.localeCompare(b.nombre,"es")).map(z => [z.id, z.nombre]);
+const subjOpts = SUBJECTS.map(s => [s,s]);
+fill($("#qSubject"), subjOpts, "Todas las materias");
+fill($("#qZone"), zoneOpts);
+fill($("#fSubject"), subjOpts, "Todas");
+fill($("#fZone"), zoneOpts);
+fill($("#fLevel"), DATA.niveles.map(n=>[n,n]), "Todos");
+fill($("#tSubject"), subjOpts);
+fill($("#tZone"), zoneOpts);
+const savedZone = store.get("zone", "carolina");
+["#qZone","#fZone","#tZone"].forEach(s => $(s).value = ZONES[savedZone] ? savedZone : "carolina");
+
+/* ---------- How it works ---------- */
+const HOW = {
+  cliente: [
+    ["Busca por zona y materia", "Elige tu barrio o comparte tu ubicación aproximada. Filtra por nivel, precio y modalidad."],
+    ["Reserva un horario", "Revisa el perfil y la disponibilidad. El docente acepta y pagas en línea para confirmar."],
+    ["Aprende y califica", "Recibes la clase en un lugar acordado entre adultos o por videollamada. Al terminar, puedes dejar tu reseña."]
+  ],
+  docente: [
+    ["Crea tu perfil", "Materias, niveles, tarifa por hora en USD, zonas de servicio y una presentación breve."],
+    ["Verifica tu identidad", "Subes cédula y títulos de forma privada. El equipo los revisa antes de publicar tu perfil."],
+    ["Acepta clases y cobra", "Recibes solicitudes, eliges cuáles aceptar y ves tus ganancias después de la comisión."]
+  ]
+};
+function renderHow(k){
+  $("#steps").innerHTML = HOW[k].map((s,i) => `<article class="step reveal"><span class="n">Paso ${i+1} de 3</span><h3>${s[0]}</h3><p>${s[1]}</p></article>`).join("");
+  $$("[data-howto]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.howto===k)));
+}
+$$("[data-howto]").forEach(b => b.addEventListener("click", () => renderHow(b.dataset.howto)));
+renderHow("cliente");
+
+/* ---------- Search state ---------- */
+const state = { zone: $("#fZone").value, subject:"", level:"", price:30, radius:8, mod:"todas", day:"any", sort:"dist", selected:null };
+function distFor(t){ return haversineKm(ZONES[state.zone], ZONES[t.zona]); }
+function distLabel(t, d){
+  if (!t.modalidades.includes("presencial")) return "Solo virtual";
+  if (d < 1) return "menos de 1 km · misma zona";
+  return "≈ " + num1.format(d) + " km · " + ZONES[t.zona].nombre;
+}
+function matchDay(t){
+  if (state.day==="any") return t.slots.length>0;
+  if (state.day==="we") return t.slots.some(s => s.dow===0 || s.dow===6);
+  if (state.day==="ev") return t.slots.some(s => s.dow>=1 && s.dow<=5 && s.hour>=18);
+  return t.slots.some(s => s.day===Number(state.day));
+}
+function filtered(){
+  return TUTORS.map(t => ({ t, d: distFor(t) })).filter(({t,d}) => {
+    if (state.subject && !t.materias.includes(state.subject)) return false;
+    if (state.level && !t.niveles.includes(state.level)) return false;
+    if (t.tarifa > state.price) return false;
+    const pres = t.modalidades.includes("presencial") && d <= state.radius;
+    const virt = t.modalidades.includes("virtual");
+    if (state.mod==="presencial" && !pres) return false;
+    if (state.mod==="virtual" && !virt) return false;
+    if (state.mod==="todas" && !pres && !virt) return false;
+    return matchDay(t);
+  }).sort((a,b) => {
+    if (state.sort==="price") return a.t.tarifa-b.t.tarifa || a.d-b.d;
+    if (state.sort==="rating") return b.t.valoracion-a.t.valoracion || a.d-b.d;
+    const da = a.t.modalidades.includes("presencial") ? a.d : 999, db = b.t.modalidades.includes("presencial") ? b.d : 999;
+    return da-db || a.t.tarifa-b.t.tarifa;
+  });
+}
+function modChips(t){
+  return t.modalidades.map(m => m==="presencial" ? `<span class="chip pres">Presencial</span>` : `<span class="chip virt">Virtual</span>`).join("");
+}
+function pinColor(t){ const p=t.modalidades.includes("presencial"), v=t.modalidades.includes("virtual"); return p&&v ? "var(--accent)" : p ? "var(--pin-p)" : "var(--ok)"; }
+function avatar(t, size){ return `<span class="avatar" style="background:${t.color};${size?`width:${size}px;height:${size}px`:""}" aria-hidden="true">${t.initials}</span>`; }
+
+/* ---------- Map ---------- */
+const map = $("#map");
+map.setAttribute("viewBox", `0 0 ${MAP_W} ${MAP_H}`);
+function drawBase(){
+  // Pichincha slopes to the west, valley ridges to the east (decorative, not survey data)
+  const pich = proj({lat:-0.17, lon:-78.60}), ilal = proj({lat:-0.27, lon:-78.40}), lumb = proj({lat:-0.215, lon:-78.455});
+  let g = `<rect width="${MAP_W}" height="${MAP_H}" fill="var(--map-bg)"/>`;
+  g += `<g fill="none" stroke="var(--contour)" stroke-width="1.2">`;
+  for (let i=1;i<=9;i++) g += `<path d="${ring(pich.x-60, pich.y, 26*i, 52*i, "p"+i, .05)}"/>`;
+  for (let i=1;i<=4;i++) g += `<path d="${ring(ilal.x, ilal.y, 18*i, 16*i, "i"+i, .06)}"/>`;
+  for (let i=1;i<=3;i++) g += `<path d="${ring(lumb.x, lumb.y, 12*i, 22*i, "l"+i, .06)}"/>`;
+  g += `</g>`;
+  const park = (lat,lon,rx,ry,name) => { const p=proj({lat,lon}); return `<ellipse cx="${p.x}" cy="${p.y}" rx="${rx}" ry="${ry}" fill="var(--park)"/><title>${name}</title>`; };
+  g += park(-0.1815,-78.4845,16,26,"P. La Carolina") + park(-0.142,-78.4875,14,30,"P. Bicentenario") + park(-0.181,-78.468,14,20,"P. Metropolitano");
+  g += `<text x="20" y="${MAP_H/2}" class="zone-label" transform="rotate(-90 20 ${MAP_H/2})" text-anchor="middle" style="letter-spacing:.2em;font-size:10px">LADERAS DEL PICHINCHA</text>`;
+  DATA.zonas.forEach(z => { const p = proj(z); g += `<circle cx="${p.x}" cy="${p.y}" r="2" fill="var(--contour-strong)"/><text x="${p.x+5}" y="${p.y-5}" class="zone-label">${esc(z.nombre)}</text>`; });
+  // scale bar 2 km + north
+  const sx = MAP_W-20-2*PXKM, sy = MAP_H-22;
+  g += `<g aria-hidden="true"><line x1="${sx}" y1="${sy}" x2="${sx+2*PXKM}" y2="${sy}" stroke="var(--ink)" stroke-width="2"/><text x="${sx+PXKM}" y="${sy-6}" text-anchor="middle" class="zone-label" style="fill:var(--ink)">2 km</text>`;
+  g += `<text x="${MAP_W-24}" y="28" text-anchor="middle" class="zone-label" style="fill:var(--ink);font-weight:700">N</text><path d="M${MAP_W-24} 34 l-5 12 h10z" fill="var(--ink)"/></g>`;
+  return g;
+}
+const BASE = drawBase();
+function renderMap(list){
+  const visible = new Set(list.map(x => x.t.id));
+  const u = proj(ZONES[state.zone]);
+  let g = BASE;
+  if (state.mod !== "virtual") g += `<circle cx="${u.x}" cy="${u.y}" r="${state.radius*PXKM}" fill="var(--accent)" fill-opacity=".07" stroke="var(--accent)" stroke-dasharray="5 5" stroke-width="1.5"/>`;
+  g += `<g aria-hidden="true"><circle cx="${u.x}" cy="${u.y}" r="6" class="pulse"/><circle cx="${u.x}" cy="${u.y}" r="7" fill="var(--sky)" stroke="var(--surface)" stroke-width="3"/></g>`;
+  const order = TUTORS.slice().sort((a,b) => (visible.has(a.id)?1:0)-(visible.has(b.id)?1:0));
+  order.forEach(t => {
+    const p = proj(ZONES[t.zona]); const x = p.x + t.jx*22, y = p.y + t.jy*22;
+    const on = visible.has(t.id), sel = state.selected===t.id;
+    g += `<g class="pin${on?"":" dim"}${sel?" sel":""}" data-id="${t.id}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})" ${on?`tabindex="0" role="button" aria-label="${esc(t.nombre)}, ${esc(t.materias.join(", "))}, ${money0.format(t.tarifa)} por hora, perfil ficticio"`:`aria-hidden="true"`}>
+      <circle class="dot" r="${sel?13:11}" fill="${pinColor(t)}"/>
+      <text text-anchor="middle" dy="4" fill="#fff" style="font:700 9px var(--f-body);pointer-events:none">${t.initials}</text>
+      ${sel?`<g transform="translate(0 -22)"><rect x="-58" y="-16" width="116" height="20" rx="6" fill="var(--ink)"/><text text-anchor="middle" y="-2" class="map-tip" fill="var(--paper)">${esc(t.nombre)} · ${money0.format(t.tarifa)}/h</text></g>`:""}
+    </g>`;
+  });
+  map.innerHTML = g;
+}
+map.addEventListener("click", e => { const p = e.target.closest(".pin:not(.dim)"); if (p) selectTutor(p.dataset.id, true); });
+map.addEventListener("keydown", e => { const p = e.target.closest(".pin"); if (p && (e.key==="Enter"||e.key===" ")) { e.preventDefault(); openProfile(p.dataset.id); } });
+
+/* ---------- Results ---------- */
+let renderTimer = 0;
+function render(withSkeleton){
+  const list = filtered();
+  $("#oPrice").textContent = money0.format(state.price);
+  $("#oRadius").textContent = state.radius + " km";
+  $("#resCount").textContent = list.length===1 ? "1 docente ficticio coincide" : `${list.length} docentes ficticios coinciden`;
+  renderMap(list);
+  const box = $("#resList");
+  clearTimeout(renderTimer);
+  if (withSkeleton){
+    box.setAttribute("aria-busy","true");
+    box.innerHTML = `<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>`;
+    renderTimer = setTimeout(() => paint(list), 260);
+  } else paint(list);
+}
+function paint(list){
+  const box = $("#resList");
+  box.removeAttribute("aria-busy");
+  if (!list.length){
+    box.innerHTML = `<div class="empty"><b style="color:var(--ink)">No hay docentes con esos filtros</b><p>Prueba ampliar la distancia, subir el precio máximo o incluir clases virtuales.</p><button class="btn btn-ghost btn-sm" type="button" id="emptyReset">Limpiar filtros</button></div>`;
+    $("#emptyReset").onclick = resetFilters; return;
+  }
+  box.innerHTML = list.map(({t,d}) => `
+    <button type="button" class="tcard${state.selected===t.id?" sel":""}" data-id="${t.id}" aria-label="Ver perfil de ${esc(t.nombre)} (ficticio)">
+      ${avatar(t)}
+      <div style="min-width:0">
+        <h3>${esc(t.nombre)} <span class="badge-fict">Ficticio</span></h3>
+        <p class="subj">${esc(t.materias.join(" · "))}</p>
+        <div class="meta">${modChips(t)}<span class="dist">${distLabel(t,d)}</span></div>
+      </div>
+      <div class="price"><b class="tnum">${money0.format(t.tarifa)}</b><small>por hora</small><span class="stars" title="Valoración ficticia">★ ${num1.format(t.valoracion)} <small>(${t.resenas} ficticias)</small></span></div>
+    </button>`).join("");
+}
+$("#resList").addEventListener("click", e => { const c = e.target.closest(".tcard"); if (c) openProfile(c.dataset.id); });
+$("#resList").addEventListener("mouseover", e => { const c = e.target.closest(".tcard"); if (c && state.selected!==c.dataset.id){ state.selected=c.dataset.id; renderMap(filtered()); } });
+function selectTutor(id, scroll){
+  state.selected = id; render(false);
+  const c = $(`.tcard[data-id="${id}"]`);
+  if (c && scroll) { c.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block:"nearest"}); c.focus({preventScroll:true}); }
+}
+
+/* ---------- Filters wiring ---------- */
+function syncFromInputs(){
+  state.zone = $("#fZone").value; state.subject = $("#fSubject").value; state.level = $("#fLevel").value;
+  state.price = +$("#fPrice").value; state.radius = +$("#fRadius").value; state.day = $("#fDay").value; state.sort = $("#fSort").value;
+  store.set("zone", state.zone);
+}
+["#fZone","#fSubject","#fLevel","#fDay","#fSort"].forEach(s => $(s).addEventListener("change", () => { syncFromInputs(); render(true); }));
+["#fPrice","#fRadius"].forEach(s => $(s).addEventListener("input", () => { syncFromInputs(); render(false); }));
+$$("[data-mod]").forEach(b => b.addEventListener("click", () => { state.mod = b.dataset.mod; $$("[data-mod]").forEach(x => x.setAttribute("aria-pressed", String(x===b))); render(true); }));
+function resetFilters(){
+  $("#fSubject").value=""; $("#fLevel").value=""; $("#fPrice").value=30; $("#fRadius").value=8; $("#fDay").value="any"; $("#fSort").value="dist";
+  state.mod="todas"; $$("[data-mod]").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.mod==="todas")));
+  syncFromInputs(); render(true);
+}
+$("#filters").addEventListener("reset", e => { e.preventDefault(); resetFilters(); });
+$("#filters").addEventListener("submit", e => e.preventDefault());
+$("#quickForm").addEventListener("submit", e => {
+  e.preventDefault();
+  $("#fSubject").value = $("#qSubject").value; $("#fZone").value = $("#qZone").value;
+  syncFromInputs(); render(true);
+  $("#buscar").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
+});
+$("#geoBtn").addEventListener("click", () => {
+  const note = $("#geoNote");
+  if (!("geolocation" in navigator)) { note.textContent = "Tu navegador no permite ubicación. Elige tu zona manualmente."; return; }
+  note.textContent = "Solicitando ubicación…";
+  navigator.geolocation.getCurrentPosition(pos => {
+    const me = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+    let best = null, bd = Infinity;
+    DATA.zonas.forEach(z => { const d = haversineKm(me, z); if (d < bd) { bd = d; best = z; } });
+    if (bd > 25) { note.textContent = "Estás fuera del área del piloto en Quito. Elige una zona manualmente."; return; }
+    $("#fZone").value = best.id; syncFromInputs(); render(true);
+    note.textContent = `Usamos la zona más cercana: ${best.nombre}. No guardamos tus coordenadas.`;
+  }, () => { note.textContent = "No se pudo obtener la ubicación (permiso denegado o no disponible). Elige tu zona manualmente."; }, { enableHighAccuracy:false, timeout:8000, maximumAge:600000 });
+});
+
+/* ---------- Profile dialog ---------- */
+const pDlg = $("#profileDlg"), bDlg = $("#bookDlg");
+function slotsHtml(t, pickable, selectedKey){
+  const byDay = {};
+  t.slots.forEach(s => (byDay[s.day] ||= []).push(s));
+  const days = Object.keys(byDay).map(Number).sort((a,b)=>a-b);
+  if (!days.length) return `<p class="note">Sin horarios en los próximos 7 días.</p>`;
+  return `<div class="days">` + days.map(d => `<div class="day"><h4>${dayInfo(d).label}</h4><div class="day-row">` + byDay[d].map(s => {
+    const taken = takenBy(t.id, s.key);
+    return `<button type="button" class="slot${taken?" taken":""}" data-key="${s.key}" ${pickable?"":"tabindex=\"-1\""} aria-pressed="${s.key===selectedKey}" ${taken?`aria-disabled="true" title="Horario ya reservado"`:""}>${String(s.hour).padStart(2,"0")}:00</button>`;
+  }).join("") + `</div></div>`).join("") + `</div>`;
+}
+function openProfile(id){
+  const t = TUTORS.find(x => x.id===id); if (!t) return;
+  state.selected = id; renderMap(filtered());
+  const d = distFor(t);
+  pDlg.innerHTML = `
+    <div class="dlg-head">${avatar(t,56)}<div><h3 id="pdName">${esc(t.nombre)}</h3><p class="note">${esc(t.materias.join(" · "))}</p><div style="display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.45rem"><span class="badge-fict">Perfil ficticio</span>${modChips(t)}</div></div>
+      <button class="dlg-close" type="button" data-close aria-label="Cerrar">✕</button></div>
+    <div class="dlg-body">
+      <p>${esc(t.bio)}</p>
+      <dl class="kv">
+        <div><dt>Tarifa</dt><dd class="tnum">${money.format(t.tarifa)} / hora</dd></div>
+        <div><dt>Zona aproximada</dt><dd>${esc(ZONES[t.zona].nombre)}</dd></div>
+        <div><dt>Distancia desde ${esc(ZONES[state.zone].nombre)}</dt><dd>${t.modalidades.includes("presencial") ? (d<1?"menos de 1 km":"≈ "+num1.format(d)+" km") : "Solo virtual"}</dd></div>
+        <div><dt>Niveles</dt><dd>${esc(t.niveles.join(", "))}</dd></div>
+        <div><dt>Experiencia (ficticia)</dt><dd>${t.experiencia} años</dd></div>
+        <div><dt>Valoración (ficticia)</dt><dd>★ ${num1.format(t.valoracion)} · ${t.resenas} reseñas</dd></div>
+      </dl>
+      <div class="notice warn"><b>Verificación:</b> este perfil es de demostración y no ha sido verificado. En producción, la insignia de verificado aparece solo después de que el equipo revisa identidad y títulos; los documentos nunca se muestran.</div>
+      <div><h4 style="font-size:1rem;margin-bottom:.6rem">Disponibilidad próximos 7 días <span class="note" style="font-family:var(--f-body);font-weight:400">(hora de Ecuador)</span></h4>${slotsHtml(t,false)}</div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap"><button class="btn btn-primary" type="button" id="goBook">Reservar clase (simulación)</button><button class="btn btn-ghost" type="button" id="reportBtn">Reportar perfil</button></div>
+    </div>`;
+  pDlg.showModal();
+  $("#goBook", pDlg).onclick = () => { pDlg.close(); openBooking(t.id); };
+  $("#reportBtn", pDlg).onclick = () => toast("Reporte simulado. En producción llega a la cola de moderación con el motivo.");
+  $$(".slot", pDlg).forEach(b => b.onclick = () => { if (b.classList.contains("taken")) { toast("Ese horario ya está reservado."); return; } pDlg.close(); openBooking(t.id, b.dataset.key); });
+}
+[pDlg,bDlg].forEach(dl => {
+  dl.addEventListener("click", e => { if (e.target===dl || e.target.closest("[data-close]")) dl.close(); });
+});
+
+/* ---------- Booking state machine ---------- */
+const FLOW = ["requested","accepted","awaiting_payment","confirmed","completed"];
+const LABEL = { requested:"Solicitada", accepted:"Aceptada", awaiting_payment:"Esperando pago", confirmed:"Confirmada", completed:"Completada", cancelled:"Cancelada", disputed:"En disputa", refunded:"Reembolsada" };
+const TRANSITIONS = {
+  requested: [ {to:"accepted", by:"Docente", label:"Simular: el docente acepta", rule:"Solo el docente dueño del horario. Vence a las 2 h sin respuesta."},
+               {to:"cancelled", by:"Docente", label:"Simular: el docente rechaza", rule:"Libera el horario."},
+               {to:"cancelled", by:"Cliente", label:"Cancelar solicitud", rule:"Sin costo antes de la aceptación."} ],
+  accepted: [ {to:"awaiting_payment", by:"Sistema", label:"Ir al pago", rule:"Se genera el cobro con clave de idempotencia. Plazo de pago: 15 min."} ],
+  awaiting_payment: [ {to:"confirmed", by:"Sistema", label:"Simular pago aprobado (no se cobra)", rule:"Solo con confirmación servidor a servidor del proveedor de pagos.", pay:true},
+                      {to:"cancelled", by:"Sistema", label:"Simular: vence el plazo de pago", rule:"Libera el horario automáticamente."} ],
+  confirmed: [ {to:"completed", by:"Sistema", label:"Simular: la clase terminó", rule:"Tras la hora de fin; el docente puede marcarla antes con evidencia."},
+               {to:"cancelled", by:"Cliente", label:"Cancelar clase", rule:"Reembolso según la política de cancelación vigente."} ],
+  completed: [ {to:"disputed", by:"Cliente", label:"Reportar un problema", rule:"Hasta 48 h después de la clase."} ],
+  disputed: [ {to:"refunded", by:"Administrador", label:"Simular: admin aprueba reembolso", rule:"Decisión registrada en auditoría."},
+              {to:"completed", by:"Administrador", label:"Simular: admin cierra sin reembolso", rule:"Decisión registrada en auditoría."} ],
+  cancelled: [ {to:"refunded", by:"Sistema", label:"Simular reembolso", rule:"Solo si hubo un pago confirmado.", cond:b => b.paid && !b.refundDone} ],
+  refunded: []
+};
+const bookings = store.get("bookings", []);
+const pending = new Set();
+function takenBy(tid, key){ return bookings.some(b => b.tutorId===tid && b.slotKey===key && !["cancelled","refunded"].includes(b.state)); }
+function save(){ store.set("bookings", bookings); }
+function idemKey(){ return "idem_" + Math.random().toString(36).slice(2,10); }
+function stamp(){ return new Intl.DateTimeFormat("es-EC",{hour:"2-digit",minute:"2-digit",second:"2-digit",timeZone:TZ}).format(new Date()); }
+function transition(b, tr){
+  if (tr.pay){
+    if (pending.has(b.id)) { toast("Solicitud duplicada ignorada: misma clave de idempotencia " + b.idem); return; }
+    pending.add(b.id); b.log.push(`${stamp()} · pago iniciado · ${b.idem}`); renderBookings();
+    setTimeout(() => { pending.delete(b.id); b.paid = true; apply(b, tr, "webhook verificado (simulado)"); }, 1300);
+    return;
+  }
+  apply(b, tr);
+}
+function apply(b, tr, extra){
+  const allowed = (TRANSITIONS[b.state]||[]).some(x => x.to===tr.to && x.by===tr.by);
+  if (!allowed) { toast("Transición no permitida desde " + LABEL[b.state]); return; }
+  if (b.state==="cancelled" && tr.to==="refunded") b.refundDone = true;
+  if (b.state==="accepted" && tr.to==="awaiting_payment") b.idem = idemKey();
+  b.log.push(`${stamp()} · ${b.state} → ${tr.to} · ${tr.by}${extra?" · "+extra:""}`);
+  b.state = tr.to; save(); renderBookings();
+  toast(`Reserva ${LABEL[tr.to].toLowerCase()} (simulación)`);
+}
+function flowHtml(b){
+  const idx = FLOW.indexOf(b.state);
+  let out = FLOW.map((s,i) => `<span class="${idx>i||(idx===-1&&b.reached?.includes(s))?"done":idx===i?"now":""}">${s}</span>`).join("<i>›</i>");
+  if (idx===-1) out += `<i>›</i><span class="off now">${b.state}</span>`;
+  return out;
+}
+function renderBookings(){
+  bookings.forEach(b => { b.reached = Array.from(new Set([...(b.reached||[]), b.state])); });
+  const box = $("#bkList");
+  if (!bookings.length){ box.innerHTML = `<div class="empty"><b style="color:var(--ink)">Aún no tienes reservas de prueba</b><p>Abre un perfil, elige un horario y crea una reserva simulada para ver cómo avanza.</p></div>`; return; }
+  box.innerHTML = bookings.slice().reverse().map(b => {
+    const t = TUTORS.find(x => x.id===b.tutorId);
+    const trs = (TRANSITIONS[b.state]||[]).filter(tr => !tr.cond || tr.cond(b));
+    const busy = pending.has(b.id);
+    return `<article class="bk" data-bk="${b.id}">
+      <div class="bk-top"><div><b>${esc(t.nombre)}</b> · ${esc(b.subject)} · <span class="tnum">${esc(b.when)}</span> · ${b.modality==="virtual"?"Virtual":"Presencial"}<br><span class="note">Total ${money.format(b.total)} · para ${b.forMinor?"un menor a cargo del adulto responsable":"el titular adulto"}</span></div>
+        <span class="state-chip st-${b.state}">${LABEL[b.state]}${busy?" · confirmando…":""}</span></div>
+      <div class="flow" aria-label="Estado de la reserva">${flowHtml(b)}</div>
+      <div class="bk-actions">${trs.map((tr,i) => `<button class="btn btn-ghost btn-sm" type="button" data-tr="${i}" ${busy&&!tr.pay?"disabled":""} title="${esc(tr.by+": "+tr.rule)}">${esc(tr.label)}</button>`).join("")}
+        ${b.state==="completed" && !b.review ? `<button class="btn btn-primary btn-sm" type="button" data-review>Calificar la clase</button>` : ""}
+        ${b.state!=="completed" && !b.review && !["cancelled","refunded"].includes(b.state) ? `<span class="note">La reseña se habilita cuando la clase está completada.</span>` : ""}</div>
+      ${b.review ? `<p class="note">Tu reseña (simulada): ${"★".repeat(b.review.stars)} ${esc(b.review.text||"")}</p>` : ""}
+      <div class="log" aria-label="Registro de auditoría simulado">${b.log.map(l => `<span>${esc(l)}</span>`).join("")}</div>
+    </article>`;
+  }).join("");
+}
+$("#bkList").addEventListener("click", e => {
+  const card = e.target.closest("[data-bk]"); if (!card) return;
+  const b = bookings.find(x => x.id===card.dataset.bk);
+  const btn = e.target.closest("[data-tr]");
+  if (btn){ const trs = (TRANSITIONS[b.state]||[]).filter(tr => !tr.cond || tr.cond(b)); transition(b, trs[+btn.dataset.tr]); }
+  if (e.target.closest("[data-review]")) openReview(b);
+});
+function smTable(){
+  const rows = [];
+  Object.entries(TRANSITIONS).forEach(([from, list]) => list.forEach(tr => rows.push(`<tr><td class="mono">${from}</td><td class="mono">${tr.to}</td><td>${tr.by}</td><td>${esc(tr.rule)}</td></tr>`)));
+  $("#smTable").innerHTML = `<thead><tr>${["Desde","Hacia","Quién","Regla"].map(h => `<th style="text-align:left;padding:.4rem .6rem;border-bottom:1px solid var(--line)">${h}</th>`).join("")}</tr></thead><tbody>${rows.join("").replace(/<td/g,'<td style="padding:.4rem .6rem;border-bottom:1px solid var(--line);vertical-align:top"')}</tbody>`;
+}
+smTable();
+
+/* ---------- Booking dialog ---------- */
+function openBooking(id, preKey){
+  const t = TUTORS.find(x => x.id===id);
+  const sel = { key: preKey || null, hours: 1, modality: t.modalidades[0], forMinor: false, subject: state.subject && t.materias.includes(state.subject) ? state.subject : t.materias[0], place: "public" };
+  function draw(err){
+    const fee = .15, total = +(t.tarifa*sel.hours).toFixed(2);
+    const slot = t.slots.find(s => s.key===sel.key);
+    bDlg.innerHTML = `
+      <div class="dlg-head">${avatar(t,48)}<div><h3 id="bdTitle">Reservar con ${esc(t.nombre)}</h3><p class="note">Simulación: no se cobra dinero ni se contacta a nadie.</p></div><button class="dlg-close" type="button" data-close aria-label="Cerrar">✕</button></div>
+      <form class="dlg-body" id="bkForm" novalidate>
+        <div class="form-grid">
+          <div class="field"><label for="bSubject">Materia</label><select id="bSubject">${t.materias.map(m => `<option ${m===sel.subject?"selected":""}>${esc(m)}</option>`).join("")}</select></div>
+          <div class="field"><label for="bHours">Duración</label><select id="bHours">${[1,1.5,2].map(h => `<option value="${h}" ${h===sel.hours?"selected":""}>${num1.format(h)} h</option>`).join("")}</select></div>
+        </div>
+        <div class="field"><span id="bModLbl">Modalidad</span><div class="radio-row" role="radiogroup" aria-labelledby="bModLbl">${t.modalidades.map(m => `<label><input type="radio" name="bMod" value="${m}" ${m===sel.modality?"checked":""}> ${m==="presencial"?"Presencial":"Virtual"}</label>`).join("")}</div></div>
+        <div class="field"><span id="bWhoLbl">¿Para quién es la clase?</span><div class="radio-row" role="radiogroup" aria-labelledby="bWhoLbl">
+          <label><input type="radio" name="bWho" value="adult" ${!sel.forMinor?"checked":""}> Para mí (adulto)</label>
+          <label><input type="radio" name="bWho" value="minor" ${sel.forMinor?"checked":""}> Para un menor a mi cargo</label></div></div>
+        ${sel.forMinor ? `<div class="notice">Como representante, tú gestionas la reserva y el pago. No pedimos la ubicación del menor ni habilitamos chat privado entre el docente y el menor. ${sel.modality==="presencial"?"La clase presencial debe realizarse con un adulto responsable presente o en un lugar acordado entre adultos.":""}</div>` : ""}
+        ${sel.modality==="presencial" ? `<div class="field"><span id="bPlaceLbl">Lugar</span><div class="radio-row" role="radiogroup" aria-labelledby="bPlaceLbl">
+          <label><input type="radio" name="bPlace" value="public" ${sel.place==="public"?"checked":""}> Lugar público acordado</label>
+          <label><input type="radio" name="bPlace" value="home" ${sel.place==="home"?"checked":""}> Domicilio del cliente</label></div>
+          <p class="note">La dirección exacta se compartiría solo después de confirmar el pago. En la demo no se pide.</p></div>` : `<p class="note">El enlace de videollamada se generaría al confirmar. Clase en vivo 1:1, sin grabación.</p>`}
+        <div><h4 style="font-size:1rem;margin-bottom:.6rem">Elige un horario (hora de Ecuador)</h4>${slotsHtml(t,true,sel.key)}</div>
+        ${err ? `<div class="notice err" role="alert">${esc(err)}</div>` : ""}
+        <div class="sum">
+          <div><span>${money.format(t.tarifa)} × ${num1.format(sel.hours)} h</span><span>${money.format(total)}</span></div>
+          <div class="note"><span>De este valor, el docente recibe (85 %)</span><span>${money.format(total*(1-fee))}</span></div>
+          <div class="note"><span>Comisión de plataforma (hipótesis 15 %)</span><span>${money.format(total*fee)}</span></div>
+          <div class="tot"><span>Total a pagar ${slot?"· "+esc(dayInfo(slot.day).label)+" "+String(slot.hour).padStart(2,"0")+":00":""}</span><span>${money.format(total)}</span></div>
+          <p class="note">El precio final lo calcula y valida el servidor. Montos referenciales sin IVA.</p>
+        </div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap"><button class="btn btn-primary" type="submit">Enviar solicitud (simulada)</button><button class="btn btn-ghost" type="button" data-close>Cancelar</button></div>
+      </form>`;
+    if (!bDlg.open) bDlg.showModal();
+    const f = $("#bkForm", bDlg);
+    $("#bSubject", f).onchange = e => { sel.subject = e.target.value; };
+    $("#bHours", f).onchange = e => { sel.hours = +e.target.value; draw(); $("#bHours", bDlg).focus(); };
+    $$("[name=bMod]", f).forEach(r => r.onchange = () => { sel.modality = r.value; draw(); });
+    $$("[name=bWho]", f).forEach(r => r.onchange = () => { sel.forMinor = r.value==="minor"; draw(); });
+    $$("[name=bPlace]", f).forEach(r => r.onchange = () => { sel.place = r.value; });
+    $$(".slot", f).forEach(b => b.onclick = () => {
+      if (b.classList.contains("taken")) { draw("Ese horario ya está reservado. Elige otro: el sistema no permite dos reservas activas en el mismo horario."); return; }
+      sel.key = b.dataset.key; draw(); const nb = $(`.slot[data-key="${sel.key}"]`, bDlg); nb && nb.focus();
+    });
+    f.onsubmit = e => {
+      e.preventDefault();
+      if (!sel.key) return draw("Elige un horario para continuar.");
+      if (takenBy(t.id, sel.key)) return draw("Ese horario acaba de ser reservado. Elige otro.");
+      if (bookings.some(b => b.slotKey===sel.key && !["cancelled","refunded"].includes(b.state))) return draw("Ya tienes otra reserva activa en ese mismo horario.");
+      const s = t.slots.find(x => x.key===sel.key);
+      const b = { id: "bk_"+Math.random().toString(36).slice(2,8), tutorId: t.id, slotKey: sel.key, subject: sel.subject, hours: sel.hours, modality: sel.modality, forMinor: sel.forMinor,
+        when: dayInfo(s.day).label + " " + String(s.hour).padStart(2,"0") + ":00", total: +(t.tarifa*sel.hours).toFixed(2), state: "requested", paid:false, log:[] };
+      b.log.push(`${stamp()} · creada → requested · Cliente`);
+      bookings.push(b); save(); renderBookings(); render(false);
+      bDlg.close(); toast("Solicitud enviada (simulación). Avánzala en «Tus reservas de prueba».");
+      $("#reservas").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
+    };
+  }
+  draw();
+}
+
+/* ---------- Review dialog ---------- */
+function openReview(b){
+  const t = TUTORS.find(x => x.id===b.tutorId); let stars = 5;
+  bDlg.innerHTML = `<div class="dlg-head"><div><h3 id="bdTitle">Calificar a ${esc(t.nombre)}</h3><p class="note">Solo disponible para clases completadas. Simulación: no se publica.</p></div><button class="dlg-close" type="button" data-close aria-label="Cerrar">✕</button></div>
+    <form class="dlg-body" id="rvForm"><div class="rate" role="radiogroup" aria-label="Calificación de 1 a 5">${[1,2,3,4,5].map(n => `<button type="button" role="radio" aria-checked="${n===5}" aria-label="${n} de 5" data-n="${n}" class="on">★</button>`).join("")}</div>
+    <div class="field"><label for="rvText">Comentario (opcional)</label><textarea id="rvText" rows="3" maxlength="280"></textarea></div>
+    <button class="btn btn-primary" type="submit">Guardar reseña simulada</button></form>`;
+  bDlg.showModal();
+  $$("[data-n]", bDlg).forEach(btn => btn.onclick = () => { stars = +btn.dataset.n; $$("[data-n]", bDlg).forEach(x => { x.classList.toggle("on", +x.dataset.n<=stars); x.setAttribute("aria-checked", String(+x.dataset.n===stars)); }); });
+  $("#rvForm", bDlg).onsubmit = e => { e.preventDefault(); if (b.state!=="completed") { toast("Solo se califican clases completadas."); return; } b.review = { stars, text: $("#rvText", bDlg).value.trim() }; b.log.push(`${stamp()} · reseña ${stars}/5 · Cliente`); save(); renderBookings(); bDlg.close(); toast("Reseña simulada guardada."); };
+}
+
+/* ---------- Tutor form & waitlist ---------- */
+function tPreview(){
+  const r = Math.max(0, +$("#tRate").value || 0);
+  $("#tPreview").textContent = `Con ${money.format(r)} por hora y una comisión hipotética del 15 %, recibirías ${money.format(r*.85)} por hora de clase, antes de impuestos.`;
+}
+$("#tRate").addEventListener("input", tPreview); tPreview();
+$("#tutorForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const n = $("#tName").value.trim();
+  $("#tMsg").textContent = n ? `Listo, ${n}: registro simulado. No se envió ni guardó ningún dato.` : "Escribe tu nombre para simular el registro.";
+  if (n) toast("Registro de docente simulado.");
+});
+$("#waitForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const v = $("#wEmail").value.trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) { $("#wMsg").textContent = "Escribe un correo válido, por ejemplo nombre@correo.com."; return; }
+  $("#wMsg").textContent = "Registro simulado. En esta demo no se envía ni se guarda el correo.";
+  toast("Te uniste a la lista de espera (simulado).");
+});
+
+/* ---------- Simulator ---------- */
+const SIM = ["Tutors","Classes","Hours","Rate","Fee","Gw","Fixed"];
+SIM.forEach(k => {
+  const n = $("#s"+k), r = $("#s"+k+"R");
+  r.addEventListener("input", () => { n.value = r.value; sim(); });
+  n.addEventListener("input", () => { r.value = n.value; sim(); });
+});
+function sim(){
+  const v = k => Math.max(0, parseFloat($("#s"+k).value) || 0);
+  const hours = v("Tutors")*v("Classes")*v("Hours")*52/12;
+  const gmv = hours*v("Rate");
+  const fee = gmv*Math.min(v("Fee"),100)/100;
+  const gw = gmv*Math.min(v("Gw"),100)/100;
+  const net = fee - gw - v("Fixed");
+  const tutorAvg = v("Tutors") ? (gmv-fee)/v("Tutors") : 0;
+  $("#oGmv").textContent = money0.format(gmv);
+  $("#oFee").textContent = money0.format(fee);
+  $("#oNet").textContent = money0.format(net); $("#oNet").classList.toggle("neg", net<0);
+  $("#oTutor").textContent = money0.format(tutorAvg);
+  const pT = gmv ? (gmv-fee)/gmv*100 : 0, pG = gmv ? Math.min(gw, fee)/gmv*100 : 0, pP = gmv ? Math.max(fee-gw,0)/gmv*100 : 0;
+  $("#oBar").innerHTML = `<span style="width:${pT}%;background:var(--sky)"></span><span style="width:${pP}%;background:#F4B860"></span><span style="width:${pG}%;background:#FF9C92"></span>`;
+  $("#oBar").setAttribute("aria-label", `Docentes ${pT.toFixed(0)} %, plataforma ${pP.toFixed(0)} %, pasarela ${pG.toFixed(0)} %`);
+  $("#oHours").textContent = `${num1.format(hours)} horas de clase al mes (${num1.format(52/12)} semanas promedio por mes). ${net<0 ? "Con estos supuestos la plataforma opera con pérdida." : "Con estos supuestos el resultado es positivo antes de impuestos."}${v("Gw")>v("Fee") ? " La pasarela cuesta más que la comisión: la plataforma pierde dinero en cada clase." : ""}`;
+}
+sim();
+
+/* ---------- Hero phone preview ---------- */
+(function phone(){
+  const svg = $("#phoneMap");
+  let g = `<rect width="320" height="190" fill="var(--map-bg)"/><g fill="none" stroke="var(--contour)" stroke-width="1">`;
+  for (let i=1;i<=7;i++) g += `<path d="${ring(-10, 95, 22*i, 30*i, "ph"+i, .06)}"/>`;
+  g += `</g><circle cx="170" cy="100" r="58" fill="var(--accent)" fill-opacity=".08" stroke="var(--accent)" stroke-dasharray="4 4"/>`;
+  [[150,70,"var(--accent)"],[205,120,"var(--pin-p)"],[130,135,"var(--accent)"],[250,60,"var(--ok)"],[95,90,"var(--pin-p)"]].forEach(([x,y,c]) => g += `<circle cx="${x}" cy="${y}" r="8" fill="${c}" stroke="var(--surface)" stroke-width="2"/>`);
+  g += `<circle cx="170" cy="100" r="6" class="pulse"/><circle cx="170" cy="100" r="6" fill="var(--sky)" stroke="var(--surface)" stroke-width="3"/>`;
+  svg.innerHTML = g;
+  const t = TUTORS[0];
+  $("#phoneBody").innerHTML = `
+    <div class="mini-card">${avatar(t,38)}<div style="min-width:0"><b style="font-size:.92rem">${esc(t.nombre)}</b> <span class="badge-fict">Ficticio</span><div class="note" style="font-size:.78rem">${esc(t.materias.join(" · "))} · ≈ 1 km</div></div><b class="tnum" style="color:var(--navy)">${money0.format(t.tarifa)}/h</b></div>
+    <div class="mini-card" style="grid-template-columns:1fr auto"><div><div class="note" style="font-size:.75rem">Reserva de ejemplo</div><b style="font-size:.9rem">Jueves 16:00 · 1,5 h</b></div><span class="state-chip st-confirmed">Confirmada</span></div>`;
+})();
+
+/* ---------- Theme toggle ---------- */
+const root = document.documentElement;
+const savedTheme = store.get("theme", null);
+if (savedTheme) root.setAttribute("data-theme", savedTheme);
+$("#themeBtn").addEventListener("click", () => {
+  const dark = root.getAttribute("data-theme") ? root.getAttribute("data-theme")==="dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  const next = dark ? "light" : "dark"; root.setAttribute("data-theme", next); store.set("theme", next);
+});
+
+/* ---------- Toast ---------- */
+let tt = 0;
+function toast(msg){ const el = $("#toast"); el.textContent = msg; el.classList.add("show"); clearTimeout(tt); tt = setTimeout(() => el.classList.remove("show"), 3200); }
+
+render(false);
+renderBookings();
+window.__mentorygo = { filtered, state, haversineKm, TRANSITIONS, bookings }; // expuesto para pruebas
+})();
+</script>
